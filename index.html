@@ -8,21 +8,26 @@
 		<meta name="keywords" content="SDQ.exe,sqdexe,sudoku">
 		<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 		<link rel="shortcut icon" href="favicon.ico">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 		<link rel="stylesheet" href="style.css">
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js" defer></script>
 		<script src="script.js" defer></script>
 	</head>
 	<body>
-		<div id="game-space">
-			<p id="word-space"></p>
-			<p id="sudoku-space"></p>
-			<button id="check-button" type="button">Sprawdź</button>
+		<div id="main">	
+			<div id="sudoku-area"></div>
+			<div id="check">
+				<button type="button" class="button check">&check;</button>
+			</div>
 		</div>
 		<div id="overlay"></div>
 		<div id="info-box">
-			<p id="info-message">WYGRAŁEŚ!!!</p>
-			<button id="info-play-button" type="button">Zagraj ponownie</button>
-			<button id="info-end-button" type="button">Wyjdź z gry</button>
+			<div id="message">GRATULACJE !!!</div>
+			<div id="replay">
+				<button class="button play" type="button">&#11118;</button>
+			</div>
+		</div>
+		<div id="exit">
+			<button class="button end" type="button">&cross;</button>
 		</div>
 	</body>
 </html>
