@@ -11,7 +11,7 @@ class Sudoku {
         this.sqrtSize = Math.floor(Math.sqrt(size));
         this.size = Math.pow(this.sqrtSize, 2);
         this.symbols = symbols.slice(0, this.size).split("");
-        this.holes = 0.5;
+        this.holes = 0.01;
         this.sudoku = []
         for (let i = 0; i < this.size; i++)
             this.sudoku[i] = [];
@@ -51,7 +51,7 @@ class Sudoku {
         return false;
         }
     getShuffledSymbols() {
-        return [...this.symbols].sort(() => Math.round(Math.random() * 10) - 5);
+        return this.shuffle([...this.symbols]);
         }
     safe(x, y, symbol) {
         let taken = new Set();
@@ -63,33 +63,47 @@ class Sudoku {
         return !taken.has(symbol);
         }
     generateHoles() {
-        let all = this.size * this.size, count = 0, x = null, y = null;
+        let all = this.size * this.size, count = 0, cells = new Array(this.size * this.size), cell = null;
+        for (let i = 0; i < all; i++) cells[i] = i;
+        this.shuffle(this.shuffle(cells));
         while (count / all < this.holes) {
-            x = Math.floor(Math.random() * this.size);
-            y = Math.floor(Math.random() * this.size);
-            if (this.sudoku[x][y] != null) {
-                this.sudoku[x][y] = null;
-                count++;
-                }
+            cell = cells.pop();
+            this.sudoku[Math.floor(cell / this.size)][cell % this.size] = null;
+            count++;
+            if (cells.length == 0) break;
             }
+        }
+    shuffle(array) {
+        for (let i = array.length - 1, j = null; i > 0; i--) {
+            j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+            }
+        return array;
         }
     }
 const variables = Object.seal({
     sudoku: null,
+    time: null,
+    controlSum: null,
     sudokuArea: $("#sudoku-area"),
     overlay: $("#overlay"),
-    infoBox: $("#info-box")
+    infoBox: $("#info-box"),
+    check: $(".check"),
+    timer: $("#time"),
+    transitionTime: Number.parseFloat($(":root").css("--transition-time")) * 1000,
+    shakeTime: Number.parseFloat($(":root").css("--shake-time")) * 1000
     });
-exit = () => window.location = "https://sqdexe.github.io";
-colorText = () => {
+const exit = () => window.location = "https://sqdexe.github.io";
+const colorText = () => {
     let mess = $("#message"), txt = mess.text();
     mess.empty();
     for (let letter of txt)
         mess.append($("<span></span>").text(letter));
     }
-generatePuzzle = () => {
+const generatePuzzle = () => {
     variables.sudokuArea.empty();
     variables.sudoku = new Sudoku();
+    variables.time = Date.now() + variables.transitionTime;
     let table = $("<table></table>"), bigRow = bigCell = row = cell = input = null;
     for (let x = 0, y = i = j = rowNum = colNum = boxNum = null; x < variables.sudoku.sqrtSize; x++) {
         bigRow = $("<tr></tr>");
@@ -122,18 +136,70 @@ generatePuzzle = () => {
         table.append(bigRow);
         }
     variables.sudokuArea.append(table);
-    }
-check = () => {
-    let full = $(".field").filter(function(i) {$(this).val() == ""}).length == 0;
-    if (full) {console.log($(".field").filter(function(i) {$(this).val() == ""}).length)}
 
+    variables.controlSum = variables.sudoku.symbols.reduce((sum, elem) => sum + elem.codePointAt(0), 0);
     }
-load = () => {
-    variables.overlay.addClass("hidden");
-    variables.infoBox.addClass("hidden");
-    colorText();
+const check = () => {
+    if ($('input').filter((i, elem) => $(elem).val() == "").length != 0) 
+        animateCheck();
+    else {
+        let sums = new Set([variables.controlSum]);
+        for (let i = 0, symbol = null; i < variables.sudoku.size; i++)
+            for (symbol of [".r", ".c", ".b"])
+                sums.add($(symbol + i).toArray().map(elem => $(elem).val().codePointAt(0)).reduce((sum, elem) => sum + elem, 0));
+        if (sums.size != 1) 
+            animateCheck();
+        else {
+            let time = Date.now() - variables.time, text = time < 999999999 ? (time / 1000).toFixed(2) : "+99999.99";
+            variables.timer.text(text + " s");
+            animateOverlay(true);
+            animateInfoBox(true);
+            }
+        }
+    }
+const animateCheck = () => {
+    variables.check.attr("disabled", "");
+    variables.check.addClass("animation-button-color");
+    variables.check.parent().addClass("animation-button-shake");
+    setTimeout(() => {
+        variables.check.removeClass("animation-button-color");
+        variables.check.parent().removeClass("animation-button-shake");
+        variables.check.removeAttr("disabled");
+        }, variables.shakeTime);
+    }
+const animateInfoBox = bool => {
+    if (bool) {
+        variables.infoBox.removeClass("animation-infobox-out");
+        variables.infoBox.removeClass("hidden");
+        variables.infoBox.addClass("animation-infobox-in");
+        }
+    else {
+        variables.infoBox.removeClass("animation-infobox-in");
+        variables.infoBox.addClass("animation-infobox-out");
+        setTimeout (() => variables.infoBox.addClass("hidden"), variables.transitionTime);
+        }
+    }
+const animateOverlay = bool => {
+    if (bool) {
+        variables.overlay.removeClass("animation-overlay-out");
+        variables.overlay.removeClass("hidden");
+        variables.overlay.addClass("animation-overlay-in");
+        }
+    else {
+        variables.overlay.removeClass("animation-overlay-in");
+        variables.overlay.addClass("animation-overlay-out");
+        setTimeout (() => variables.overlay.addClass("hidden"), variables.transitionTime);
+        }
+    }
+const load = () => {
+    animateOverlay(false);
     generatePuzzle();
-    $(".play").click(generatePuzzle);
+    colorText();
+    $(".play").click(() => {
+        animateOverlay(false);
+        animateInfoBox(false);
+        generatePuzzle();
+        });
     $(".check").click(check);
     $(".end").click(exit);
     }

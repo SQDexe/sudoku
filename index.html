@@ -8,7 +8,7 @@
 		<meta name="keywords" content="SDQ.exe,sqdexe,sudoku">
 		<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 		<link rel="shortcut icon" href="favicon.ico">
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+		<script src="https://code.jquery.com/jquery-3.7.0.js" integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
 		<link rel="stylesheet" href="style.css">
 		<script src="script.js" defer></script>
 	</head>
@@ -20,8 +20,9 @@
 			</div>
 		</div>
 		<div id="overlay"></div>
-		<div id="info-box">
+		<div id="info-box" class="hidden">
 			<div id="message">GRATULACJE !!!</div>
+			<div id="time">0.00 s</div>
 			<div id="replay">
 				<button class="button play" type="button">&#11118;</button>
 			</div>
