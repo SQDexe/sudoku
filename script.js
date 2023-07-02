@@ -22,7 +22,7 @@ class Sudoku {
         for (let i = 0, l = this.size * this.size; i < l; i++)
             this.sudoku[Math.floor(i / this.size)][i % this.size] = null;
 
-        /* Populaiting the board */        
+        /* Populating the board */       
         for (let i = 0; i < this.sqrtSize; i++)
             this.generateBox(i);
         this.generateRest(0, this.sqrtSize);
@@ -58,7 +58,7 @@ class Sudoku {
         return false;
         }
     getShuffledSymbols() {
-        /* Shuffles and return symbols */
+        /* Shuffles and returns symbols */
         return this.shuffle([...this.symbols]);
         }
     safe(x, y, symbol) {
@@ -86,7 +86,7 @@ class Sudoku {
             }
         }
     shuffle(array) {
-        /* Quick aglorithm for shuffling , more evenly spaced than Math.random */
+        /* Quick algorithm for shuffling , more evenly spaced than Math.random */
         for (let i = array.length - 1, j = null; i > 0; i--) {
             j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
@@ -137,7 +137,7 @@ const generatePuzzle = () => {
             for (i = 0; i < variables.sudoku.sqrtSize; i++) {
                 row = $("<tr></tr>");
 
-                /* Assigning input and classes, calciualting row and column number */
+                /* Assigning input and classes, calculating row and column number */
                 for (j = 0; j < variables.sudoku.sqrtSize; j++) {
                     rowNum = x * variables.sudoku.sqrtSize + i;
                     colNum = y * variables.sudoku.sqrtSize + j;
