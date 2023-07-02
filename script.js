@@ -1,36 +1,41 @@
 class Sudoku {
     constructor(symbols = "123456789", size = 9, holesFraction = 0.5) {
         /* 1234 - ♠♣♦♥ - nswe - 0123456789abcdef - abcdefghijklmnopqrstuvwxyz */
+        /* Normalizing inputted values */
         symbols = Array.from(new Set(symbols.toString().split(""))), size = Number(size);
         if (typeof symbols !== "string")
             symbols = "123456789";
         if (!Number.isInteger(size) || size < 0)
             size = 9;
-
         size = size <= symbols.length ? size : symbols.length;
+
+        /* Assigning to poles */
         this.sqrtSize = Math.floor(Math.sqrt(size));
         this.size = Math.pow(this.sqrtSize, 2);
         this.symbols = symbols.slice(0, this.size).split("");
         this.holes = holesFraction;
+
+        /* Generating empty board */
         this.sudoku = []
         for (let i = 0; i < this.size; i++)
             this.sudoku[i] = [];
         for (let i = 0, l = this.size * this.size; i < l; i++)
             this.sudoku[Math.floor(i / this.size)][i % this.size] = null;
-        this.makeFull();
-        }
-    makeFull() {
+
+        /* Populaiting the board */        
         for (let i = 0; i < this.sqrtSize; i++)
             this.generateBox(i);
         this.generateRest(0, this.sqrtSize);
         this.generateHoles();
         }
     generateBox(x) {
+        /* Generating diagonal box - no need for checking row and columns */
         let symbols2Use = this.getShuffledSymbols();
         for (let i = 0; i < this.size; i++)
             this.sudoku[x * this.sqrtSize + Math.floor(i / this.sqrtSize)][x * this.sqrtSize + (i % this.sqrtSize)] = symbols2Use.pop();
         }
     generateRest(x, y) {
+        /* Rules for traversing board */
         if (x == this.size - 1 && y == this.size)
             return true;
         if (y == this.size) {
@@ -39,6 +44,8 @@ class Sudoku {
             }
         if (typeof this.sudoku[x][y] === "string")
             return this.generateRest(x, y + 1);
+
+        /* Try every symbol until good, return if not */
         for (let symbol of this.getShuffledSymbols()) {
             if (this.safe(x, y, symbol)) {
                 this.sudoku[x][y] = symbol;
@@ -51,9 +58,11 @@ class Sudoku {
         return false;
         }
     getShuffledSymbols() {
+        /* Shuffles and return symbols */
         return this.shuffle([...this.symbols]);
         }
     safe(x, y, symbol) {
+        /* Checks if position is safe */
         let taken = new Set();
         for (let t = 0; t < this.size; t++) {
             taken.add(this.sudoku[x][t]);
@@ -63,9 +72,12 @@ class Sudoku {
         return !taken.has(symbol);
         }
     generateHoles() {
+        /* Generating randomly ordered cells */
         let all = this.size * this.size, count = 0, cells = new Array(this.size * this.size), cell = null;
         for (let i = 0; i < all; i++) cells[i] = i;
         this.shuffle(this.shuffle(cells));
+
+        /* Punches holes until one of conditions */
         while (count / all < this.holes) {
             cell = cells.pop();
             this.sudoku[Math.floor(cell / this.size)][cell % this.size] = null;
@@ -74,6 +86,7 @@ class Sudoku {
             }
         }
     shuffle(array) {
+        /* Quick aglorithm for shuffling , more evenly spaced than Math.random */
         for (let i = array.length - 1, j = null; i > 0; i--) {
             j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
@@ -81,6 +94,7 @@ class Sudoku {
         return array;
         }
     }
+/* Useful variables */
 const variables = Object.seal({
     sudoku: null,
     time: null,
@@ -97,22 +111,33 @@ const exit = () => window.location = "https://sqdexe.github.io";
 const colorText = () => {
     let mess = $("#message"), txt = mess.text();
     mess.empty();
+
     for (let letter of txt)
         mess.append($("<span></span>").text(letter));
     }
 const generatePuzzle = () => {
+    /* Clears the board, makes sudoku, calculates control sum, and starts the timer */
     variables.sudokuArea.empty();
     variables.sudoku = new Sudoku();
     variables.time = Date.now() + variables.transitionTime;
+    variables.controlSum = variables.sudoku.symbols.reduce((sum, elem) => sum + elem.codePointAt(0), 0);
+
+    /* Populating the table, assigning big row */
     let table = $("<table></table>"), bigRow = bigCell = row = cell = input = null;
     for (let x = 0, y = i = j = rowNum = colNum = boxNum = null; x < variables.sudoku.sqrtSize; x++) {
         bigRow = $("<tr></tr>");
+        
+        /* Assigning big cell with table, calculating box number */
         for (y = 0; y < variables.sudoku.sqrtSize; y++) {
             boxNum = x * variables.sudoku.sqrtSize + y % variables.sudoku.sqrtSize;
             bigCell = $("<td></td>");
             bigCell.append($("<table></table>").attr("id", "b" + boxNum));
+
+            /* Assigning row */
             for (i = 0; i < variables.sudoku.sqrtSize; i++) {
                 row = $("<tr></tr>");
+
+                /* Assigning input and classes, calciualting row and column number */
                 for (j = 0; j < variables.sudoku.sqrtSize; j++) {
                     rowNum = x * variables.sudoku.sqrtSize + i;
                     colNum = y * variables.sudoku.sqrtSize + j;
@@ -122,6 +147,8 @@ const generatePuzzle = () => {
                         "value": ""
                         });
                     input.addClass("field").addClass("r" + rowNum).addClass("c" + colNum).addClass("b" + boxNum);
+
+                    /* CHecking for empty cells */
                     if (variables.sudoku.sudoku[rowNum][colNum] != null)
                         input.attr({
                             "value": variables.sudoku.sudoku[rowNum][colNum],
@@ -136,20 +163,23 @@ const generatePuzzle = () => {
         table.append(bigRow);
         }
     variables.sudokuArea.append(table);
-
-    variables.controlSum = variables.sudoku.symbols.reduce((sum, elem) => sum + elem.codePointAt(0), 0);
     }
 const check = () => {
+    /* Checking for empty cells */
     if ($('input').filter((i, elem) => $(elem).val() == "").length != 0) 
         animateCheck();
+    
     else {
+        /* Checking if values are correct */
         let sums = new Set([variables.controlSum]);
         for (let i = 0, symbol = null; i < variables.sudoku.size; i++)
             for (symbol of [".r", ".c", ".b"])
                 sums.add($(symbol + i).toArray().map(elem => $(elem).val().codePointAt(0)).reduce((sum, elem) => sum + elem, 0));
         if (sums.size != 1) 
             animateCheck();
+
         else {
+            /* Ending the game */
             let time = Date.now() - variables.time, text = time < 999999999 ? (time / 1000).toFixed(2) : "+99999.99";
             variables.timer.text(text + " s");
             animateOverlay(true);
