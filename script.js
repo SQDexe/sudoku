@@ -148,7 +148,7 @@ const generatePuzzle = () => {
                         });
                     input.addClass("field").addClass("r" + rowNum).addClass("c" + colNum).addClass("b" + boxNum);
 
-                    /* CHecking for empty cells */
+                    /* Checking for empty cells */
                     if (variables.sudoku.sudoku[rowNum][colNum] != null)
                         input.attr({
                             "value": variables.sudoku.sudoku[rowNum][colNum],
