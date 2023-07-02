@@ -1,5 +1,5 @@
 class Sudoku {
-    constructor(symbols = "123456789", size = 9) {
+    constructor(symbols = "123456789", size = 9, holesFraction = 0.5) {
         /* 1234 - ♠♣♦♥ - nswe - 0123456789abcdef - abcdefghijklmnopqrstuvwxyz */
         symbols = Array.from(new Set(symbols.toString().split(""))), size = Number(size);
         if (typeof symbols !== "string")
@@ -11,7 +11,7 @@ class Sudoku {
         this.sqrtSize = Math.floor(Math.sqrt(size));
         this.size = Math.pow(this.sqrtSize, 2);
         this.symbols = symbols.slice(0, this.size).split("");
-        this.holes = 0.01;
+        this.holes = holesFraction;
         this.sudoku = []
         for (let i = 0; i < this.size; i++)
             this.sudoku[i] = [];
