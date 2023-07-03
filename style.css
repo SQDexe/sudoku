@@ -209,7 +209,7 @@
 .hidden {display: none;}
 * {
     z-index: 0;
-    font-family: "comic sans ms";
+    font-family: 'Comic Sans MS', Tahoma, Verdana, sans-serif;
     user-select: none;
     -ms-user-select: none;
     -moz-user-select: none;
@@ -217,7 +217,7 @@
 }
 body { background-color: var(--background-color); }
 
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 800px) {
     #exit {
         top: 6px;
         right: 6px;
