@@ -155,6 +155,7 @@
 #sudoku-area table,
 #sudoku-area tr,
 #sudoku-area td { visibility: hidden; }
+#time { font-size: 16px; }
 .animation-button-color {
     animation: button-color var(--shake-time) ease-in-out 0s 1 normal forwards; 
     -webkit-animation: button-color var(--shake-time) ease-in-out 0s 1 normal forwards;
@@ -215,3 +216,60 @@
     -webkit-user-select: none;
 }
 body { background-color: var(--background-color); }
+
+@media screen and (max-width: 700px) {
+    #exit {
+        top: 6px;
+        right: 6px;
+        } 
+    #info-box {
+        height: 160px;
+        width: 300px;
+        border-radius: 15px;
+        }
+    #message {
+        margin-top: 24px;
+        font-size: 24px;
+        }
+    .button {
+        height: 48px;
+        width: 48px;
+        border-radius: 8px;
+        font-size: 30px;
+        }
+    .field {
+        height: 32px;
+        width: 32px;
+        border-radius: 6px;
+        font-size: 24px;
+        }
+    }
+@media screen and (max-width: 400px) {
+    #exit {
+        top: 4px;
+        right: 4px;
+        } 
+    #info-box {
+        height: 120px;
+        width: 250px;
+        border-radius: 12px;
+        }
+    #message {
+        margin-top: 16px;
+        font-size: 16px;
+        }
+    #replay { margin-top: 12px; }
+    #time { font-size: 12px; }
+    .button {
+        height: 36px;
+        width: 36px;
+        border-radius: 6px;
+        font-size: 24px;
+        }
+    .field {
+        height: 24px;
+        width: 24px;
+        border-radius: 4px;
+        font-size: 16px;
+        }
+    }
