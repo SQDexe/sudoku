@@ -137,25 +137,12 @@ const generatePuzzle = () => {
             /* Assigns row */
             for (i = 0; i < variables.sudoku.sqrtSize; i++) {
                 row = $("<tr></tr>");
-
-                /* Assigns input and attributes, calculates row and column number */
+                /* Creates input, calculates row and column number */
                 for (j = 0; j < variables.sudoku.sqrtSize; j++) {
                     rowNum = x * variables.sudoku.sqrtSize + i;
                     colNum = y * variables.sudoku.sqrtSize + j;
-                    input = $("<input>").attr({
-                        "type": "text",
-                        "maxlength": "1",
-                        "value": ""
-                        });
-                    input.addClass("field").addClass("r" + rowNum).addClass("c" + colNum).addClass("b" + boxNum);
 
-                    /* Checks for empty cells */
-                    if (variables.sudoku.sudoku[rowNum][colNum] != null)
-                        input.attr({
-                            "value": variables.sudoku.sudoku[rowNum][colNum],
-                            "readonly": ""
-                            });
-                    row.append($("<td></td>").append(input));
+                    row.append($("<td></td>").append(constructInput(rowNum, colNum, boxNum)));
                     }
                 bigCell.children().append(row);
                 }
@@ -164,6 +151,24 @@ const generatePuzzle = () => {
         table.append(bigRow);
         }
     variables.sudokuArea.append(table);
+    }
+const constructInput = (r, c, b) => {
+    /* Constructs input and assigns attributes */
+    input = $("<input>").attr({
+        "type": "text",
+        "maxlength": "1",
+        "value": ""
+        });
+    input.addClass("field").addClass("r" + r).addClass("c" + c).addClass("b" + b);
+
+    /* Checks for empty cells */
+    if (variables.sudoku.sudoku[r][c] != null)
+        input.attr({
+            "value": variables.sudoku.sudoku[r][c],
+            "readonly": ""
+            });
+
+    return input;
     }
 const check = () => {
     /* Checks for empty cells */
