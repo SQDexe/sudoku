@@ -180,6 +180,7 @@
 .button {
     height: 64px;
     width: 64px;
+    aspect-ratio: 1/1;
     border-style: none;
     border-radius: 10px;
     color: var(--writing-color);
@@ -195,6 +196,7 @@
     visibility: visible;
     height: 48px;
     width: 48px;
+    aspect-ratio: 1/1;
     border-style: none;
     border-radius: 8px;
     background-color: var(--primary-color);
