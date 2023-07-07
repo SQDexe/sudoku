@@ -2,7 +2,7 @@ class Sudoku {
     constructor(symbols = "123456789", size = 9, holesFraction = 0.5) {
         /* 1234 - ♠♣♦♥ - nswe - 0123456789abcdef - abcdefghijklmnopqrstuvwxyz */
         /* Normalizes inputted values */
-        symbols = Array.from(new Set(symbols.toString().split(""))), size = Number(size);
+        symbols = Array.from(new Set(symbols.toString().split(''))), size = Number(size);
         if (typeof symbols !== "string")
             symbols = "123456789";
         if (!Number.isInteger(size) || size < 0)
@@ -12,7 +12,7 @@ class Sudoku {
         /* Assigns to poles */
         this.sqrtSize = Math.floor(Math.sqrt(size));
         this.size = Math.pow(this.sqrtSize, 2);
-        this.symbols = symbols.slice(0, this.size).split("");
+        this.symbols = symbols.slice(0, this.size).split('');
         this.holes = holesFraction;
 
         /* Generates empty board */
@@ -132,7 +132,7 @@ const generatePuzzle = () => {
         for (y = 0; y < variables.sudoku.sqrtSize; y++) {
             boxNum = x * variables.sudoku.sqrtSize + y % variables.sudoku.sqrtSize;
             bigCell = $("<td></td>");
-            bigCell.append($("<table></table>").attr("id", "b" + boxNum));
+            bigCell.append($("<table></table>").attr("id", 'b' + boxNum));
 
             /* Assigns row */
             for (i = 0; i < variables.sudoku.sqrtSize; i++) {
@@ -157,7 +157,7 @@ const constructInput = (r, c, b) => {
     input = $("<input>").attr({
         "type": "text",
         "maxlength": "1",
-        "value": ""
+        "value": ''
         });
     input.addClass("field").addClass("r" + r).addClass("c" + c).addClass("b" + b);
 
@@ -165,14 +165,14 @@ const constructInput = (r, c, b) => {
     if (variables.sudoku.sudoku[r][c] != null)
         input.attr({
             "value": variables.sudoku.sudoku[r][c],
-            "readonly": ""
+            "readonly": ''
             });
 
     return input;
     }
 const check = () => {
     /* Checks for empty cells */
-    if ($('input').filter((i, elem) => $(elem).val() == "").length != 0) 
+    if ($('input').filter((i, elem) => $(elem).val() == '').length != 0) 
         animateCheck();
     
     else {
@@ -195,7 +195,7 @@ const check = () => {
     }
 const animateCheck = () => {
     /* Animates check button */
-    variables.check.attr("disabled", "");
+    variables.check.attr("disabled", '');
     variables.check.addClass("animation-button-color");
     variables.check.parent().addClass("animation-button-shake");
     setTimeout(() => {
