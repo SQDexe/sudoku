@@ -6,5 +6,5 @@ Board is generated automatically using small class, used with priavte fields
 Size, and symbols can be changed
 
 Made with:
-- plain HTML / JS / CSS
+- HTML / JS / CSS
 - jQuery
