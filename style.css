@@ -11,6 +11,7 @@
     --secondary-color: #ffbbff;
     --writing-color: #ffffff;
     --writing-color-dimmed: #ffeeff;
+    --disabled-color: #ddccdd;
     --blocked-color: #eebbee;
     --wrong-color: #ffaaaa;
     --transition-time: 0.25s;
@@ -191,6 +192,10 @@
 .button:active {
     color: var(--writing-color-dimmed);
     background-color: var(--secondary-color);
+    }
+.button.disabled {
+    color: var(--writing-color-dimmed);
+    background-color: var(--disabled-color);
     }
 .field {
     visibility: visible;
