@@ -37,7 +37,13 @@ class Sudoku {
     getSize() { return this.#size; }
     getSqrtSize() { return this.#sqrtSize; }
     get(x, y) { return this.#board[x][y]; }
-    set(x, y, val = null) { this.#board[x][y] = val; }
+    set(x, y, val = null) {
+        /* Sets cell if coditions are met */
+        if (typeof val === "string" || val == null)
+            this.#board[x][y] = val;
+        console.log(val);
+        console.table(this.#board);
+        }
     getFieldsChecked() {
         /* Checks if all fields are filled */
         return this.#board.every(elem => elem.every(e => e != null));
@@ -49,7 +55,7 @@ class Sudoku {
             for (j = 0; j < this.#size; j++) {
                 sums[i] += this.#board[i][j].codePointAt(0);
                 sums[i] += this.#board[j][i].codePointAt(0);
-                sums[i] += this.#fullBoard[i * this.#sqrtSize + Math.floor(j / this.#sqrtSize)][i * this.#sqrtSize + (j % this.#sqrtSize)].codePointAt(0);
+                sums[i] += this.#board[(Math.floor(i / this.#sqrtSize) * this.#sqrtSize + Math.floor(j/ this.#sqrtSize))][((i % this.#sqrtSize) * this.#sqrtSize + j % this.#sqrtSize)].codePointAt(0);
                 }
             }
         return sums.every(e => e == this.#controlSum() * 3);
@@ -122,14 +128,11 @@ class Sudoku {
             }
         return array;
         }
-    
-    getControlSum() { return this.#symbols.reduce((sum, elem) => sum + elem.codePointAt(0), 0); }
     }
 /* Useful variables */
 const variables = Object.seal({
     sudoku: null,
     time: null,
-    controlSum: null,
     sudokuArea: $("#sudoku-area"),
     overlay: $("#overlay"),
     infoBox: $("#info-box"),
@@ -152,7 +155,6 @@ const generatePuzzle = () => {
     variables.sudokuArea.empty();
     variables.sudoku = new Sudoku();
     variables.time = Date.now() + variables.transitionTime;
-    variables.controlSum = variables.sudoku.getControlSum();
     let sqrtSize = variables.sudoku.getSqrtSize();
 
     /* Populates the table, assigns big row */
@@ -186,14 +188,17 @@ const generatePuzzle = () => {
     }
 const constructInput = (r, c, b) => {
     /* Constructs input, and assigns attributes */
-    input = $("<input>").addClass("field").attr({
-        "type": "text",
-        "maxlength": "1",
-        "value": '',
-        "data-row": r,
-        "data-column": c,
-        "data-box": b
-        });
+    input = $("<input>")
+        .addClass("field")
+        .attr({
+            "type": "text",
+            "maxlength": "1",
+            "value": '',
+            "data-row": r,
+            "data-column": c,
+            "data-box": b
+            })
+        .on("keydown", Event => move(Event));;
 
     /* Checks for empty cells */
     if (variables.sudoku.get(r, c) != null)
@@ -201,27 +206,24 @@ const constructInput = (r, c, b) => {
             "value": variables.sudoku.get(r, c),
             "readonly": ''
             });
+    else input.on("input", Event => {
+        sendData(Event);
+        checkFields();
+        });
 
     return input;
     }
 const checkFields = () => {
     /* Checks for empty cells */
-    if ($(".field").filter((i, elem) => $(elem).val() == '').length == 0)
+    if (variables.sudoku.getFieldsChecked())
         variables.check.removeAttr("disabled").removeClass("disabled");
     else 
         variables.check.attr("disabled", '').addClass("disabled");
     }
 const checkBoard = () => {
     /* Checks if values are correct */
-    let sums = new Set([variables.controlSum]);
-    for (let i = 0, symbol = null; i < variables.sudoku.getSize(); i++)
-        for (data of ["row", "column", "box"])
-            sums.add($(`.field[data-${data}="${i}"]`).toArray()
-                .map(elem => $(elem).val().codePointAt(0))
-                .reduce((sum, elem) => sum + elem, 0));
-    if (sums.size != 1) 
+    if (!variables.sudoku.getBoardChecked()) 
         animateCheck();
-
     else {
         /* Ends the game */
         let time = Date.now() - variables.time, text = time < 99999999 ? (time / 1000).toFixed(2) : "+9999.99";
@@ -232,6 +234,8 @@ const checkBoard = () => {
     }
 const sendData = e => {
     /* Keeps DOM, and virtual boards synchronised */
+    let val = $(e.target).val();
+    variables.sudoku.set(e.target.dataset.row, e.target.dataset.column, val != "" ? val : null);
     }
 const move = e => {
     /* Moves focus with arrow keys */
@@ -295,11 +299,6 @@ const load = () => {
         animateInfoBox(false);
         generatePuzzle();
         });
-    $(".field:not([readonly])").on("input", Event => {
-        sendData(Event);
-        checkFields();
-        });
-    $(".field").on("keydown", Event => move(Event));
     $(".check").click(checkBoard);
     $(".end").click(exit);
     }
