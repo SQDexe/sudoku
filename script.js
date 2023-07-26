@@ -4,6 +4,8 @@ class Sudoku {
     #symbols;
     #holes;
     #board;
+    #fullBoard;
+    #truthBoard;
 
     constructor(symbols = "123456789", size = 9, holesFraction = 0.5) {
         /* 1234 - ♠♣♦♥ - nswe - 0123456789abcdef - abcdefghijklmnopqrstuvwxyz */
@@ -21,28 +23,46 @@ class Sudoku {
         this.#symbols = symbols.slice(0, this.#size).split('');
         this.#holes = holesFraction;
 
-        /* Generates empty board */
-        this.#board = []
-        for (let i = 0; i < this.#size; i++)
-            this.#board[i] = [];
-        for (let i = 0, l = this.#size ** 2; i < l; i++)
-            this.#board[Math.floor(i / this.#size)][i % this.#size] = null;
+        /* Generates empty boards */
+        this.#fullBoard = Array.from({length: this.#size}).map(() => Array.from({length: this.#size}).map(() => null));
+        this.#truthBoard = this.#fullBoard.map(elem => elem.map(() => false));
 
-        /* Populates the board */
+        /* Populates the board, prepares it for use, and beforehand punches holes */
         for (let i = 0; i < this.#sqrtSize; i++)
             this.#generateBox(i);
         this.#generateRest(0, this.#sqrtSize);
         this.#generateHoles();
+        this.#board = this.#truthBoard.map((elem, i) => elem.map((e, j) => e ? null : this.#fullBoard[i][j]));
         }
     getSize() { return this.#size; }
     getSqrtSize() { return this.#sqrtSize; }
-    getBoard(x, y) { return this.#board[x][y]; }
-    getControlSum() { return this.#symbols.reduce((sum, elem) => sum + elem.codePointAt(0), 0); }
+    get(x, y) { return this.#board[x][y]; }
+    set(x, y, val = null) { this.#board[x][y] = val; }
+    getFieldsChecked() {
+        /* Checks if all fields are filled */
+        return this.#board.every(elem => elem.every(e => e != null));
+        }    
+    getBoardChecked() {
+        /* Checks if all requirements are met */
+        let sums = Array.from({length: this.#size}).map(() => 0);
+        for (let i = 0, j = null; i < this.#size; i++) {
+            for (j = 0; j < this.#size; j++) {
+                sums[i] += this.#board[i][j].codePointAt(0);
+                sums[i] += this.#board[j][i].codePointAt(0);
+                sums[i] += this.#fullBoard[i * this.#sqrtSize + Math.floor(j / this.#sqrtSize)][i * this.#sqrtSize + (j % this.#sqrtSize)].codePointAt(0);
+                }
+            }
+        return sums.every(e => e == this.#controlSum() * 3);
+        }    
+    #controlSum() {
+        /* Calculates control sum */
+        return this.#symbols.reduce((sum, elem) => sum + elem.codePointAt(0), 0);
+        }
     #generateBox(x) {
         /* Generates diagonal box - no need for checking rows, and columns */
         let symbols2Use = this.#shuffledSymbols();
         for (let i = 0; i < this.#size; i++)
-            this.#board[x * this.#sqrtSize + Math.floor(i / this.#sqrtSize)][x * this.#sqrtSize + (i % this.#sqrtSize)] = symbols2Use.pop();
+            this.#fullBoard[x * this.#sqrtSize + Math.floor(i / this.#sqrtSize)][x * this.#sqrtSize + (i % this.#sqrtSize)] = symbols2Use.pop();
         }
     #generateRest(x, y) {
         /* Rules for traversing board */
@@ -52,17 +72,17 @@ class Sudoku {
             x++;
             y = 0;
             }
-        if (typeof this.#board[x][y] === "string")
+        if (typeof this.#fullBoard[x][y] === "string")
             return this.#generateRest(x, y + 1);
 
         /* Tries every symbol until good, return if not */
         for (let symbol of this.#shuffledSymbols()) {
             if (this.#safe(x, y, symbol)) {
-                this.#board[x][y] = symbol;
+                this.#fullBoard[x][y] = symbol;
                 if (this.#generateRest(x, y + 1))
                     return true;
                 else
-                    this.#board[x][y] = null;
+                    this.#fullBoard[x][y] = null;
                 }
             }
         return false;
@@ -75,22 +95,22 @@ class Sudoku {
         /* Checks if position is safe */
         let taken = new Set();
         for (let t = 0; t < this.#size; t++) {
-            taken.add(this.#board[x][t]);
-            taken.add(this.#board[t][y]);
-            taken.add(this.#board[Math.floor(x / this.#sqrtSize) * this.#sqrtSize + Math.floor(t / this.#sqrtSize)][Math.floor(y / this.#sqrtSize) * this.#sqrtSize + (t % this.#sqrtSize)]);
+            taken.add(this.#fullBoard[x][t]);
+            taken.add(this.#fullBoard[t][y]);
+            taken.add(this.#fullBoard[Math.floor(x / this.#sqrtSize) * this.#sqrtSize + Math.floor(t / this.#sqrtSize)][Math.floor(y / this.#sqrtSize) * this.#sqrtSize + (t % this.#sqrtSize)]);
             }
         return !taken.has(symbol);
         }
     #generateHoles() {
         /* Generates randomly ordered cells */
-        let all = this.#size ** 2, count = 0, cells = new Array(this.#size ** 2), cell = null;
-        for (let i = 0; i < all; i++) cells[i] = i;
+        let all = this.#size ** 2, cells = Array.from({length: all}).map((_, i) => i);
         this.#shuffle(this.#shuffle(cells));
 
         /* Punches holes until one of conditions */
-        while (count / all < this.#holes || cells.length == 0) {
+        let count = 0, cell = null;
+        while (count / all < this.#holes && cells.length != 0) {
             cell = cells.pop();
-            this.#board[Math.floor(cell / this.#size)][cell % this.#size] = null;
+            this.#truthBoard[Math.floor(cell / this.#size)][cell % this.#size] = true;
             count++;
             }
         }
@@ -102,6 +122,8 @@ class Sudoku {
             }
         return array;
         }
+    
+    getControlSum() { return this.#symbols.reduce((sum, elem) => sum + elem.codePointAt(0), 0); }
     }
 /* Useful variables */
 const variables = Object.seal({
@@ -174,9 +196,9 @@ const constructInput = (r, c, b) => {
         });
 
     /* Checks for empty cells */
-    if (variables.sudoku.getBoard(r, c) != null)
+    if (variables.sudoku.get(r, c) != null)
         input.attr({
-            "value": variables.sudoku.getBoard(r, c),
+            "value": variables.sudoku.get(r, c),
             "readonly": ''
             });
 
@@ -208,6 +230,25 @@ const checkBoard = () => {
         animateInfoBox(true);
         }
     }
+const sendData = e => {
+    /* Keeps DOM, and virtual boards synchronised */
+    }
+const move = e => {
+    /* Moves focus with arrow keys */
+    switch (e.key) {
+        case "ArrowLeft" : focus(e.target, 0, -1); break;
+        case "ArrowDown" : focus(e.target, 1, 0); break;
+        case "ArrowRight" : focus(e.target, 0, 1); break;
+        case "ArrowUp" : focus(e.target, -1, 0); break;
+        default : return;
+        }
+    }
+const focus = (obj, x, y) => {
+    /* Takes x, and y coordinates to change focus */
+    let [row, col] = [Number(obj.dataset.row) + x, Number(obj.dataset.column) + y].map(num => clamp(num, 0, variables.sudoku.getSize() - 1));
+    $(".field").filter(`[data-row="${row}"][data-column="${col}"]`).trigger("focus");
+    }
+const clamp = (num, min, max) => Math.min(Math.max(min, Number(num)), max);
 const animateCheck = () => {
     /* Animates check button */
     variables.check.attr("disabled", '');
@@ -245,20 +286,6 @@ const animateOverlay = bool => {
         setTimeout (() => variables.overlay.addClass("hidden"), variables.transitionTime);
         }
     }
-const move = e => {
-    switch (e.key) {
-        case "ArrowLeft" : focus(e.target, 0, -1); break;
-        case "ArrowDown" : focus(e.target, 1, 0); break;
-        case "ArrowRight" : focus(e.target, 0, 1); break;
-        case "ArrowUp" : focus(e.target, -1, 0); break;
-        default : return;
-        }
-    }
-const focus = (obj, x, y) => {
-    let [row, col] = [Number(obj.dataset.row) + x, Number(obj.dataset.column) + y].map(num => clamp(num, 0, variables.sudoku.getSize() - 1));
-    $(".field").filter(`[data-row="${row}"][data-column="${col}"]`).trigger("focus");
-    }
-const clamp = (num, min, max) => Math.min(Math.max(min, Number(num)), max);
 const load = () => {
     animateOverlay(false);
     generatePuzzle();
@@ -268,7 +295,10 @@ const load = () => {
         animateInfoBox(false);
         generatePuzzle();
         });
-    $(".field").on("input", checkFields);
+    $(".field:not([readonly])").on("input", Event => {
+        sendData(Event);
+        checkFields();
+        });
     $(".field").on("keydown", Event => move(Event));
     $(".check").click(checkBoard);
     $(".end").click(exit);
