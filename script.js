@@ -37,18 +37,16 @@ class Sudoku {
     getSize() { return this.#size; }
     getSqrtSize() { return this.#sqrtSize; }
     get(x, y) { return this.#board[x][y]; }
-    set(x, y, val = null) {
+    set(x, y, val) {
         /* Sets cell if coditions are met */
-        if (typeof val === "string" || val == null)
+        if ((typeof val === "string" || val == null) && !this.#truthBoard[x][y])
             this.#board[x][y] = val;
-        console.log(val);
-        console.table(this.#board);
         }
-    getFieldsChecked() {
+    checkFields() {
         /* Checks if all fields are filled */
         return this.#board.every(elem => elem.every(e => e != null));
         }    
-    getBoardChecked() {
+    checkBoard() {
         /* Checks if all requirements are met */
         let sums = Array.from({length: this.#size}).map(() => 0);
         for (let i = 0, j = null; i < this.#size; i++) {
@@ -59,7 +57,8 @@ class Sudoku {
                 }
             }
         return sums.every(e => e == this.#controlSum() * 3);
-        }    
+        }
+    checkWhereverIndentical() { return this.#board.every((elem, i) => elem.every((e, j) => e == this.#fullBoard[i][j])); }   
     #controlSum() {
         /* Calculates control sum */
         return this.#symbols.reduce((sum, elem) => sum + elem.codePointAt(0), 0);
@@ -215,14 +214,14 @@ const constructInput = (r, c, b) => {
     }
 const checkFields = () => {
     /* Checks for empty cells */
-    if (variables.sudoku.getFieldsChecked())
+    if (variables.sudoku.checkFields())
         variables.check.removeAttr("disabled").removeClass("disabled");
     else 
         variables.check.attr("disabled", '').addClass("disabled");
     }
 const checkBoard = () => {
     /* Checks if values are correct */
-    if (!variables.sudoku.getBoardChecked()) 
+    if (!variables.sudoku.checkBoard()) 
         animateCheck();
     else {
         /* Ends the game */
