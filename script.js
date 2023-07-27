@@ -50,7 +50,6 @@ class Sudoku {
         if ((typeof val === "string" || val == null) && this.#truthBoard[x][y])
             this.#board[x][y] = val;
         }
-    see() {console.table(this.#board);}
     checkFields() {
         /* Checks if all fields are filled */
         return this.#board.every(elem => elem.every(e => e != null));
