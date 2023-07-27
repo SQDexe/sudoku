@@ -10,27 +10,35 @@ class Sudoku {
     constructor(symbols = "123456789", size = 9, holesFraction = 0.5) {
         /* 1234 - ♠♣♦♥ - nswe - 0123456789abcdef - abcdefghijklmnopqrstuvwxyz */
         /* Normalizes inputted values */
-        symbols = Array.from(new Set(symbols.toString().split(''))), size = Number(size);
-        if (typeof symbols !== "string")
+        if (typeof symbols !== "string" )
             symbols = "123456789";
+        symbols = Array.from(new Set(symbols.split(''))), size = Number(size);
         if (!Number.isInteger(size) || size < 0)
             size = 9;
         size = size <= symbols.length ? size : symbols.length;
+        if (size < 4) {
+            size = 9;
+            symbols = "123456789";
+            }
 
         /* Assigns to poles */
         this.#sqrtSize = Math.floor(Math.sqrt(size));
         this.#size = Math.pow(this.#sqrtSize, 2);
-        this.#symbols = symbols.slice(0, this.#size).split('');
+        this.#symbols = symbols.slice(0, this.#size);
         this.#holes = holesFraction;
 
-        /* Generates empty boards */
-        this.#fullBoard = Array.from({length: this.#size}).map(() => Array.from({length: this.#size}).map(() => null));
-        this.#truthBoard = this.#fullBoard.map(elem => elem.map(() => false));
+        do {
+            /* Generates empty boards */
+            this.#fullBoard = Array.from({length: this.#size}).map(() => Array.from({length: this.#size}).map(() => null));
+            this.#truthBoard = this.#fullBoard.map(elem => elem.map(() => false));
 
-        /* Populates the board, prepares it for use, and beforehand punches holes */
-        for (let i = 0; i < this.#sqrtSize; i++)
-            this.#generateBox(i);
-        this.#generateRest(0, this.#sqrtSize);
+            /* Populates the board, repeats if necessary */
+            for (let i = 0; i < this.#sqrtSize; i++)
+                this.#generateBox(i);
+            this.#generateRest(0, this.#sqrtSize);
+            } while (this.#fullBoard.some(elem => elem.some(e => e == null)));
+
+        /* Prepares it for use, and beforehand punches holes */ 
         this.#generateHoles();
         this.#board = this.#truthBoard.map((elem, i) => elem.map((e, j) => e ? null : this.#fullBoard[i][j]));
         }
@@ -39,9 +47,10 @@ class Sudoku {
     get(x, y) { return this.#board[x][y]; }
     set(x, y, val) {
         /* Sets cell if coditions are met */
-        if ((typeof val === "string" || val == null) && !this.#truthBoard[x][y])
+        if ((typeof val === "string" || val == null) && this.#truthBoard[x][y])
             this.#board[x][y] = val;
         }
+    see() {console.table(this.#board);}
     checkFields() {
         /* Checks if all fields are filled */
         return this.#board.every(elem => elem.every(e => e != null));
@@ -58,7 +67,7 @@ class Sudoku {
             }
         return sums.every(e => e == this.#controlSum() * 3);
         }
-    checkWhereverIndentical() { return this.#board.every((elem, i) => elem.every((e, j) => e == this.#fullBoard[i][j])); }   
+    checkWhereverIndentical() { return this.#board.every((elem, i) => elem.every((e, j) => e == this.#fullBoard[i][j])); }
     #controlSum() {
         /* Calculates control sum */
         return this.#symbols.reduce((sum, elem) => sum + elem.codePointAt(0), 0);
