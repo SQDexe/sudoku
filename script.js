@@ -10,22 +10,18 @@ class Sudoku {
     constructor(symbols = "123456789", size = 9, holesFraction = 0.5) {
         /* 1234 - ♠♣♦♥ - nswe - 0123456789abcdef - abcdefghijklmnopqrstuvwxyz */
         /* Normalizes inputted values */
-        if (typeof symbols !== "string" )
+        if (typeof symbols !== "string" || symbols.length < 4)
             symbols = "123456789";
         symbols = Array.from(new Set(symbols.split(''))), size = Number(size);
-        if (!Number.isInteger(size) || size < 0)
+        if (!Number.isInteger(size) || size < 4)
             size = 9;
-        size = size <= symbols.length ? size : symbols.length;
-        if (size < 4) {
-            size = 9;
-            symbols = "123456789";
-            }
+        size = symbols.length < size ? symbols.length : size;
 
         /* Assigns to poles */
         this.#sqrtSize = Math.floor(Math.sqrt(size));
         this.#size = Math.pow(this.#sqrtSize, 2);
-        this.#symbols = symbols.slice(0, this.#size);
         this.#holes = holesFraction;
+        this.#symbols = symbols.slice(0, this.#size);
 
         do {
             /* Generates empty boards */
@@ -37,7 +33,7 @@ class Sudoku {
                 this.#generateBox(i);
             this.#generateRest(0, this.#sqrtSize);
             } while (this.#fullBoard.some(elem => elem.some(e => e == null)));
-
+        
         /* Prepares it for use, and beforehand punches holes */ 
         this.#generateHoles();
         this.#board = this.#truthBoard.map((elem, i) => elem.map((e, j) => e ? null : this.#fullBoard[i][j]));
@@ -47,7 +43,7 @@ class Sudoku {
     get(x, y) { return this.#board[x][y]; }
     set(x, y, val) {
         /* Sets cell if coditions are met */
-        if ((typeof val === "string" || val == null) && this.#truthBoard[x][y])
+        if ((typeof val === "string" && val.length != 0 || val == null) && this.#truthBoard[x][y])
             this.#board[x][y] = val;
         }
     checkFields() {
