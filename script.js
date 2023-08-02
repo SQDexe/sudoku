@@ -32,7 +32,7 @@ class Sudoku {
             for (let i = 0; i < this.#sqrtSize; i++)
                 this.#generateBox(i);
             this.#generateRest(0, this.#sqrtSize);
-            } while (this.#fullBoard.some(elem => elem.some(e => e == null)));
+            } while (!this.#checkGeneration);
         
         /* Prepares it for use, and beforehand punches holes */ 
         this.#generateHoles();
@@ -53,19 +53,31 @@ class Sudoku {
     checkBoard() {
         /* Checks if all requirements are met */
         let sums = Array.from({length: this.#size}).map(() => 0);
-        for (let i = 0, j = null; i < this.#size; i++) {
+        for (let i = 0, j = null; i < this.#size; i++) 
             for (j = 0; j < this.#size; j++) {
                 sums[i] += this.#board[i][j].codePointAt(0);
                 sums[i] += this.#board[j][i].codePointAt(0);
                 sums[i] += this.#board[(Math.floor(i / this.#sqrtSize) * this.#sqrtSize + Math.floor(j/ this.#sqrtSize))][((i % this.#sqrtSize) * this.#sqrtSize + j % this.#sqrtSize)].codePointAt(0);
                 }
-            }
         return sums.every(e => e == this.#controlSum() * 3);
         }
     checkWhereverIndentical() { return this.#board.every((elem, i) => elem.every((e, j) => e == this.#fullBoard[i][j])); }
     #controlSum() {
         /* Calculates control sum */
         return this.#symbols.reduce((sum, elem) => sum + elem.codePointAt(0), 0);
+        }
+    #checkGeneration() {
+        /* Verifies board during generation */
+        if (this.#fullBoard.some(elem => elem.some(e => e == null)))
+            return false;
+        let sums = Array.from({length: this.#size}).map(() => 0);
+        for (let i = 0, j = null; i < this.#size; i++) 
+            for (j = 0; j < this.#size; j++) {
+                sums[i] += this.#fullBoard[i][j].codePointAt(0);
+                sums[i] += this.#fullBoard[j][i].codePointAt(0);
+                sums[i] += this.#fullBoard[(Math.floor(i / this.#sqrtSize) * this.#sqrtSize + Math.floor(j/ this.#sqrtSize))][((i % this.#sqrtSize) * this.#sqrtSize + j % this.#sqrtSize)].codePointAt(0);
+                }
+        return sums.some(e => e != this.#controlSum() * 3);
         }
     #generateBox(x) {
         /* Generates diagonal box - no need for checking rows, and columns */
