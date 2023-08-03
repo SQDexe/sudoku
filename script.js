@@ -23,7 +23,6 @@ class Sudoku {
         this.#holes = holesFraction;
         this.#symbols = symbols.slice(0, this.#size);
 
-        let success = false;
         do {
             /* Generates empty boards */
             this.#fullBoard = Array.from({length: this.#size}).map(() => Array.from({length: this.#size}).map(() => null));
@@ -32,8 +31,7 @@ class Sudoku {
             /* Populates the board, repeats if necessary */
             for (let i = 0; i < this.#sqrtSize; i++)
                 this.#generateBox(i);
-            success = this.#generateRest(0, this.#sqrtSize);
-            } while (!success);
+            } while (!this.#generateRest(0, this.#sqrtSize));
         
         /* Prepares it for use, and beforehand punches holes */ 
         this.#generateHoles();
@@ -151,7 +149,7 @@ const colorText = () => {
     mess.empty();
 
     for (let letter of txt)
-        mess.append($("<span></span>").text(letter));
+        mess.append($("<span>").text(letter));
     }
 const generatePuzzle = () => {
     /* Clears the board, makes sudoku, prepares variables, and starts the timer */
@@ -161,25 +159,25 @@ const generatePuzzle = () => {
     let sqrtSize = variables.sudoku.getSqrtSize();
 
     /* Populates the table, assigns big row */
-    let table = $("<table></table>"), bigRow = bigCell = row = cell = input = null;
+    let table = $("<table>"), bigRow = bigCell = row = cell = input = null;
     for (let x = 0, y = i = j = rowNum = colNum = boxNum = null; x < sqrtSize; x++) {
-        bigRow = $("<tr></tr>");
+        bigRow = $("<tr>");
         
         /* Assigns big cell with table, calculates box number */
         for (y = 0; y < sqrtSize; y++) {
             boxNum = x * sqrtSize + y % sqrtSize;
-            bigCell = $("<td></td>");
-            bigCell.append($("<table></table>"));
+            bigCell = $("<td>");
+            bigCell.append($("<table>"));
 
             /* Assigns row */
             for (i = 0; i < sqrtSize; i++) {
-                row = $("<tr></tr>");
+                row = $("<tr>");
                 /* Creates input, calculates row, and column number */
                 for (j = 0; j < sqrtSize; j++) {
                     rowNum = x * sqrtSize + i;
                     colNum = y * sqrtSize + j;
 
-                    row.append($("<td></td>").append(constructInput(rowNum, colNum, boxNum)));
+                    row.append($("<td>").append(constructInput(rowNum, colNum, boxNum)));
                     }
                 bigCell.children().append(row);
                 }
@@ -200,8 +198,7 @@ const constructInput = (r, c, b) => {
             "data-row": r,
             "data-column": c,
             "data-box": b
-            })
-        .on("keydown", Event => move(Event));;
+            });
 
     /* Checks for empty cells */
     if (variables.sudoku.get(r, c) != null)
@@ -209,21 +206,17 @@ const constructInput = (r, c, b) => {
             "value": variables.sudoku.get(r, c),
             "readonly": ''
             });
-    else input.on("input", Event => {
-        sendData(Event);
-        checkFields();
-        });
 
     return input;
     }
-const checkFields = () => {
+const checkInputs = () => {
     /* Checks for empty cells */
     if (variables.sudoku.checkFields())
         variables.check.removeAttr("disabled").removeClass("disabled");
     else 
         variables.check.attr("disabled", '').addClass("disabled");
     }
-const checkBoard = () => {
+const check = () => {
     /* Checks if values are correct */
     if (!variables.sudoku.checkBoard()) 
         animateCheck();
@@ -231,6 +224,7 @@ const checkBoard = () => {
         /* Ends the game */
         let time = Date.now() - variables.time, text = time < 99999999 ? (time / 1000).toFixed(2) : "+9999.99";
         variables.timer.text(text + " s");
+        console.log(variables.sudoku.checkWhereverIndentical());
         animateOverlay(true);
         animateInfoBox(true);
         }
@@ -294,15 +288,23 @@ const animateOverlay = bool => {
         }
     }
 const load = () => {
+    /* Starts game */
     animateOverlay(false);
     generatePuzzle();
     colorText();
+
+    /* Binds events  */
     $(".play").click(() => {
         animateOverlay(false);
         animateInfoBox(false);
         generatePuzzle();
         });
-    $(".check").click(checkBoard);
+    $(".field").on("keydown", Event => move(Event));
+    $(".field:not([readonly])").on("input", Event => {
+        sendData(Event);
+        checkInputs();
+        })
+    $(".check").click(check);
     $(".end").click(exit);
     }
 $(document).ready(load);
