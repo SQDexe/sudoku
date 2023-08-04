@@ -186,6 +186,7 @@ const generatePuzzle = () => {
         table.append(bigRow);
         }
     variables.sudokuArea.append(table);
+    bindFields();
     }
 const constructInput = (r, c, b) => {
     /* Constructs input, and assigns attributes */
@@ -287,6 +288,14 @@ const animateOverlay = bool => {
         setTimeout (() => variables.overlay.addClass("hidden"), variables.transitionTime);
         }
     }
+const bindFields = () => {
+    /* Binds for input fields */
+    $(".field").on("keydown", Event => move(Event));
+    $(".field:not([readonly])").on("input", Event => {
+        sendData(Event);
+        checkInputs();
+        });
+    }
 const load = () => {
     /* Starts game */
     animateOverlay(false);
@@ -299,11 +308,6 @@ const load = () => {
         animateInfoBox(false);
         generatePuzzle();
         });
-    $(".field").on("keydown", Event => move(Event));
-    $(".field:not([readonly])").on("input", Event => {
-        sendData(Event);
-        checkInputs();
-        })
     $(".check").click(check);
     $(".end").click(exit);
     }
