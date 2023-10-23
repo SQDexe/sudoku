@@ -2,26 +2,51 @@ class Sudoku {
     #size;
     #sqrtSize;
     #symbols;
+    #seed;
     #holes;
     #board;
     #fullBoard;
     #truthBoard;
 
-    constructor(symbols = "123456789", size = 9, holesFraction = 0.5) {
+    constructor(opt = {}) {
         /* 1234 - ♠♣♦♥ - nswe - 0123456789abcdef - abcdefghijklmnopqrstuvwxyz */
+        let symbols = "123456789".split(''), size = 9, holes = 0.5, seed = opt.seed ?? null;
+
         /* Normalizes inputted values */
-        if (typeof symbols !== "string" || symbols.length < 4)
-            symbols = "123456789";
-        symbols = Array.from(new Set(symbols.split(''))), size = Number(size);
-        if (!Number.isInteger(size) || size < 4)
-            size = 9;
-        size = symbols.length < size ? symbols.length : size;
+        let tmp = null;
+        try {
+            tmp = Array.from(new Set(opt.symbols.split('')));
+            symbols = 4 <= tmp.length ? tmp : symbols;
+            } catch (e) { console.log(e); }
+
+        try {
+            tmp = Math.floor(Number(opt.size));
+            size = 4 <= tmp ? tmp : size;
+            } catch (e) { console.log(e); }
+        size = Math.min(size, symbols.length);
+
+        try {
+            tmp = Number(opt.holes);
+            holes = (0 <= tmp && tmp <= 1) ? tmp : holes;
+            } catch (e) { console.log(e); }
+
+        /* Seed random values */
+        try {
+            if (seed == null) 
+                seed = Math.random();
+            Math.seedrandom(seed);
+            }
+        catch (e) {
+            console.log(e);
+            seed = null;
+            }
 
         /* Assigns to poles */
         this.#sqrtSize = Math.floor(Math.sqrt(size));
         this.#size = Math.pow(this.#sqrtSize, 2);
-        this.#holes = holesFraction;
+        this.#holes = holes;
         this.#symbols = symbols.slice(0, this.#size);
+        this.#seed = seed;
 
         do {
             /* Generates empty boards */
@@ -39,10 +64,11 @@ class Sudoku {
         }
     getSize() { return this.#size; }
     getSqrtSize() { return this.#sqrtSize; }
+    getSeed() { return this.#seed; }
     get(x, y) { return this.#board[x][y]; }
     set(x, y, val) {
         /* Sets cell if coditions are met */
-        if ((typeof val === "string" && val.length != 0 || val == null) && this.#truthBoard[x][y])
+        if ((typeof val === "string" && val.length == 1 || val == null) && this.#truthBoard[x][y])
             this.#board[x][y] = val;
         }
     checkFields() {
@@ -96,7 +122,7 @@ class Sudoku {
         }
     #shuffledSymbols() {
         /* Shuffles and returns symbols */
-        return this.#shuffle([...this.#symbols]);
+        return this.#shuffle(this.#symbols, 3);
         }
     #safe(x, y, symbol) {
         /* Checks if position is safe */
@@ -110,8 +136,7 @@ class Sudoku {
         }
     #generateHoles() {
         /* Generates randomly ordered cells */
-        let all = this.#size ** 2, cells = Array.from({length: all}).map((_, i) => i);
-        this.#shuffle(this.#shuffle(cells));
+        let all = this.#size ** 2, cells = this.#shuffle(Array.from({length: all}).map((_, i) => i), 3);
 
         /* Punches holes until one of conditions */
         let count = 0, cell = null;
@@ -121,12 +146,14 @@ class Sudoku {
             count++;
             }
         }
-    #shuffle(array) {
+    #shuffle(array, times = 1) {
         /* Quick algorithm for shuffling, spaced more evenly than Math.random */
-        for (let i = array.length - 1, j = null; i > 0; i--) {
-            j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-            }
+        array = [...array];
+        for (let t = 0, i = null, j = null; t < times; t++) 
+            for (i = array.length - 1; i > 0; i--) {
+                j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+                }
         return array;
         }
     }
