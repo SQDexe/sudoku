@@ -217,8 +217,15 @@
     -ms-user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
-}
-body { background-color: var(--background-color); }
+    }
+body {
+    background-color: var(--background-color);
+    text-size-adjust: none;
+    }
+input, button, td, tr {
+    margin: 0;
+    padding: 0;
+    }
 
 @media screen and (max-width: 800px) {
     #exit {
