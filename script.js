@@ -1,3 +1,4 @@
+"use strict";
 class Sudoku {
     #size;
     #sqrtSize;
@@ -8,26 +9,32 @@ class Sudoku {
     #fullBoard;
     #truthBoard;
 
-    constructor(opt = {}) {
+    constructor(options = {}) {
         /* 1234 - ♠♣♦♥ - nswe - 0123456789abcdef - abcdefghijklmnopqrstuvwxyz */
-        let symbols = "123456789".split(''), size = 9, holes = 0.5, seed = opt.seed ?? null;
+        let symbols = "123456789".split(''), size = 9, holes = 0.5, seed = options.seed ?? null;
 
         /* Normalizes inputted values */
         let tmp = null;
         try {
-            tmp = Array.from(new Set(opt.symbols.split('')));
-            symbols = 4 <= tmp.length ? tmp : symbols;
+            tmp = Array.from(new Set(options.symbols.split('')));
+            symbols = 4 <= tmp.length ?
+                tmp :
+                symbols;
             } catch (e) { console.log(e); }
 
         try {
-            tmp = Math.floor(Number(opt.size));
-            size = 4 <= tmp ? tmp : size;
+            tmp = Math.floor(Number(options.size));
+            size = 4 <= tmp ?
+                tmp :
+                size;
             } catch (e) { console.log(e); }
         size = Math.min(size, symbols.length);
 
         try {
-            tmp = Number(opt.holes);
-            holes = (0 <= tmp && tmp <= 1) ? tmp : holes;
+            tmp = Number(options.holes);
+            holes = (0 <= tmp && tmp <= 1) ?
+                tmp :
+                holes;
             } catch (e) { console.log(e); }
 
         /* Seed random values */
@@ -60,7 +67,9 @@ class Sudoku {
         
         /* Prepares it for use, and beforehand punches holes */ 
         this.#generateHoles();
-        this.#board = this.#truthBoard.map((elem, i) => elem.map((e, j) => e ? null : this.#fullBoard[i][j]));
+        this.#board = this.#truthBoard.map((elem, i) => elem.map((e, j) => e ?
+            null :
+            this.#fullBoard[i][j]));
         }
     getSize() { return this.#size; }
     getSqrtSize() { return this.#sqrtSize; }
@@ -149,7 +158,7 @@ class Sudoku {
     #shuffle(array, times = 1) {
         /* Quick algorithm for shuffling, spaced more evenly than Math.random */
         array = [...array];
-        for (let t = 0, i = null, j = null; t < times; t++) 
+        for (let [t, i, j] = [0, null, null]; t < times; t++) 
             for (i = array.length - 1; i > 0; i--) {
                 j = Math.floor(Math.random() * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]];
@@ -186,8 +195,8 @@ const generatePuzzle = () => {
     let sqrtSize = variables.sudoku.getSqrtSize();
 
     /* Populates the table, assigns big row */
-    let table = $("<table>"), bigRow = bigCell = row = cell = input = null;
-    for (let x = 0, y = i = j = rowNum = colNum = boxNum = null; x < sqrtSize; x++) {
+    let [table, bigRow, bigCell, row, cell, input] = [$("<table>"), null, null, null, null, null];
+    for (let [x, y, i, j, rowNum, colNum, boxNum] = [0, null, null, null, null, null, null]; x < sqrtSize; x++) {
         bigRow = $("<tr>");
         
         /* Assigns big cell with table, calculates box number */
@@ -217,7 +226,7 @@ const generatePuzzle = () => {
     }
 const constructInput = (r, c, b) => {
     /* Constructs input, and assigns attributes */
-    input = $("<input>")
+    let input = $("<input>")
         .addClass("field")
         .attr({
             "type": "text",
@@ -230,19 +239,18 @@ const constructInput = (r, c, b) => {
 
     /* Checks for empty cells */
     if (variables.sudoku.get(r, c) != null)
-        input.attr({
-            "value": variables.sudoku.get(r, c),
-            "readonly": ''
-            });
+        input
+            .attr("value", variables.sudoku.get(r, c))
+            .prop("readonly", true);
 
     return input;
     }
 const checkInputs = () => {
     /* Checks for empty cells */
     if (variables.sudoku.checkFields())
-        variables.check.removeAttr("disabled").removeClass("disabled");
+        variables.check.prop("disabled", false).removeClass("disabled");
     else 
-        variables.check.attr("disabled", '').addClass("disabled");
+        variables.check.prop("disabled", true).addClass("disabled");
     }
 const check = () => {
     /* Checks if values are correct */
@@ -250,7 +258,10 @@ const check = () => {
         animateCheck();
     else {
         /* Ends the game */
-        let time = Date.now() - variables.time, text = time < 99999999 ? (time / 1000).toFixed(2) : "+9999.99";
+        let time = Date.now() - variables.time,
+            text = time < 99999999 ?
+                (time / 1000).toFixed(2) :
+                "+9999.99";
         variables.timer.text(text + " s");
         console.log(variables.sudoku.checkWhereverIndentical());
         animateOverlay(true);
@@ -260,7 +271,9 @@ const check = () => {
 const sendData = e => {
     /* Keeps DOM, and virtual boards synchronised */
     let val = $(e.target).val();
-    variables.sudoku.set(e.target.dataset.row, e.target.dataset.column, val != "" ? val : null);
+    variables.sudoku.set(e.target.dataset.row, e.target.dataset.column, val != "" ?
+        val :
+        null);
     }
 const move = e => {
     /* Moves focus with arrow keys */
@@ -280,13 +293,13 @@ const focus = (obj, x, y) => {
 const clamp = (num, min, max) => Math.min(Math.max(min, Number(num)), max);
 const animateCheck = () => {
     /* Animates check button */
-    variables.check.attr("disabled", '');
+    variables.check.prop("disabled", true);
     variables.check.addClass("animation-button-color");
     variables.check.parent().addClass("animation-button-shake");
     setTimeout(() => {
         variables.check.removeClass("animation-button-color");
         variables.check.parent().removeClass("animation-button-shake");
-        variables.check.removeAttr("disabled");
+        variables.check.prop("disabled", false);
         }, variables.shakeTime);
     }
 const animateInfoBox = bool => {
