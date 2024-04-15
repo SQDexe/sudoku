@@ -148,7 +148,7 @@ class Sudoku {
         let all = this.#size ** 2, cells = this.#shuffle(Array.from({length: all}).map((_, i) => i), 3);
 
         /* Punches holes until one of conditions */
-        let count = 0, cell = null;
+        let [count, cell] = [0, null];
         while (count / all < this.#holes && cells.length != 0) {
             cell = cells.pop();
             this.#truthBoard[Math.floor(cell / this.#size)][cell % this.#size] = true;
@@ -185,7 +185,8 @@ const colorText = () => {
     mess.empty();
 
     for (let letter of txt)
-        mess.append($("<span>").text(letter));
+        mess.append($("<span>")
+            .text(letter));
     }
 const generatePuzzle = () => {
     /* Clears the board, makes sudoku, prepares variables, and starts the timer */
@@ -213,7 +214,9 @@ const generatePuzzle = () => {
                     rowNum = x * sqrtSize + i;
                     colNum = y * sqrtSize + j;
 
-                    row.append($("<td>").append(constructInput(rowNum, colNum, boxNum)));
+                    row.append($("<td>")
+                        .append(constructInput(rowNum, colNum, boxNum))
+                        );
                     }
                 bigCell.children().append(row);
                 }
@@ -239,9 +242,7 @@ const constructInput = (r, c, b) => {
 
     /* Checks for empty cells */
     if (variables.sudoku.get(r, c) != null)
-        input
-            .attr("value", variables.sudoku.get(r, c))
-            .prop("readonly", true);
+        input.attr("value", variables.sudoku.get(r, c)).prop("readonly", true);
 
     return input;
     }
